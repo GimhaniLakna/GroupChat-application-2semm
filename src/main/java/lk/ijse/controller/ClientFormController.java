@@ -1,6 +1,5 @@
 package lk.ijse.controller;
 
-
 import com.jfoenix.controls.JFXButton;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -17,19 +16,17 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javazoom.jl.decoder.JavaLayerException;
+import javazoom.jl.player.Player;
 import lk.ijse.controller.client.Client;
 
-import java.awt.*;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+
+import java.io.*;
 import java.net.URL;
 import java.nio.file.Files;
 import java.util.ResourceBundle;
 
 public class ClientFormController implements Initializable {
-
     private final String[] emojis = {
             "\uD83D\uDE00", // 😀
             "\uD83D\uDE01", // 😁
@@ -52,10 +49,9 @@ public class ClientFormController implements Initializable {
             "\uD83D\uDE12", // 😒
             "\uD83D\uDE13"  // 😓
     };
-    @FXML
-    private TextField txtMsgArea;
 
     @FXML
+    private TextField txtMsgArea;
     private Client client;
 
     @FXML
@@ -66,6 +62,23 @@ public class ClientFormController implements Initializable {
 
     @FXML
     private GridPane emojiGridpane;
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+        emojiAnchorpane.setVisible(false);
+        int buttonIndex = 0;
+        for (int row = 0; row < 4; row++) {
+            for (int column = 0; column < 4; column++) {
+                if (buttonIndex < emojis.length) {
+                    String emoji = emojis[buttonIndex];
+                    JFXButton emojiButton = createEmojiButton(emoji);
+                    emojiGridpane.add(emojiButton, column, row);
+                    buttonIndex++;
+                } else {
+                    break;
+                }
+            }
+        }
+    }
 
     private JFXButton createEmojiButton(String emoji) {
         JFXButton button = new JFXButton(emoji);
@@ -78,10 +91,63 @@ public class ClientFormController implements Initializable {
         return button;
     }
 
-    public void btnEmojiOnAction(ActionEvent actionEvent) {
+    @FXML
+    void btnEmojiOnAction(ActionEvent event) {
         emojiAnchorpane.setVisible(!emojiAnchorpane.isVisible());
     }
 
+    @FXML
+    void btnSendOnAction(ActionEvent event) {
+        try {
+            String text = txtMsgArea.getText();
+            if (text != null) {
+                appendText(text);
+                client.sendMessage(text);
+                txtMsgArea.clear();
+            } else {
+                new Alert(Alert.AlertType.INFORMATION, "message is empty").show();
+            }
+        } catch (IOException e) {
+            new Alert(Alert.AlertType.ERROR, "Something went wrong : server down").show();
+        }
+    }
+
+    private void appendText(String text) {
+        HBox hBox = new HBox();
+        hBox.setStyle("-fx-alignment: center-right;-fx-fill-height: true;-fx-min-height: 50;-fx-pref-width: 520;-fx-max-width: 520;-fx-padding: 10");
+        Label messageLbl = new Label(text);
+        messageLbl.setStyle("-fx-background-color:  #008011;-fx-background-radius:15;-fx-font-size: 18;-fx-font-weight: normal;-fx-text-fill: white;-fx-wrap-text: true;-fx-alignment: center-left;-fx-content-display: left;-fx-padding: 10;-fx-max-width: 350;");
+        hBox.getChildren().add(messageLbl);
+        vBox.getChildren().add(hBox);
+        new Thread(() -> {
+            playSound("media/messageSend.mp3");
+        }).start();
+    }
+
+    private void playSound(String sound) {
+        try {
+            new Player(new BufferedInputStream(getClass().getClassLoader().getResourceAsStream(sound))).play();
+        } catch (JavaLayerException e) {
+            new Alert(Alert.AlertType.ERROR, "Audio not available").show();
+        }
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
+    }
+
+    public void writeMessage(String message) {
+        HBox hBox = new HBox();
+        hBox.setStyle("-fx-alignment: center-left;-fx-fill-height: true;-fx-min-height: 50;-fx-pref-width: 520;-fx-max-width: 520;-fx-padding: 10");
+        Label messageLbl = new Label(message);
+        messageLbl.setStyle("-fx-background-color:   #2980b9;-fx-background-radius:15;-fx-font-size: 18;-fx-font-weight: normal;-fx-text-fill: white;-fx-wrap-text: true;-fx-alignment: center-left;-fx-content-display: left;-fx-padding: 10;-fx-max-width: 350;");
+        hBox.getChildren().add(messageLbl);
+        Platform.runLater(() -> {
+
+            vBox.getChildren().add(hBox);
+        });
+
+    }
 
     public void imageOnAction(ActionEvent actionEvent) {
         FileChooser fileChooser = new FileChooser();
@@ -111,59 +177,6 @@ public class ClientFormController implements Initializable {
         }
     }
 
-    public void btnSendOnAction(ActionEvent actionEvent) {
-        try {
-            String text = txtMsgArea.getText();
-            if (text != null) {
-                appendText(text);
-                client.sendMessage(text);
-                txtMsgArea.clear();
-            } else {
-                new Alert(Alert.AlertType.INFORMATION, "message is empty").show();
-            }
-        } catch (IOException e) {
-            new Alert(Alert.AlertType.ERROR, "Something went wrong : server down").show();
-        }
-    }
-
-    private void appendText(String text) {
-    }
-
-    public void setClient(Client client) {
-        this.client = client;
-    }
-
-    public void writeMessage(String message) {
-        HBox hBox = new HBox();
-        hBox.setStyle("-fx-alignment: center-left;-fx-fill-height: true;-fx-min-height: 50;-fx-pref-width: 520;-fx-max-width: 520;-fx-padding: 10");
-        Label messageLbl = new Label(message);
-        messageLbl.setStyle("-fx-background-color:   #2980b9;-fx-background-radius:15;-fx-font-size: 18;-fx-font-weight: normal;-fx-text-fill: white;-fx-wrap-text: true;-fx-alignment: center-left;-fx-content-display: left;-fx-padding: 10;-fx-max-width: 350;");
-        hBox.getChildren().add(messageLbl);
-        Platform.runLater(() -> {
-
-            vBox.getChildren().add(hBox);
-        });
-
-    }
-
-    @Override
-    public void initialize(URL url, ResourceBundle resourceBundle) {
-        emojiAnchorpane.setVisible(false);
-        int buttonIndex = 0;
-        for (int row = 0; row < 4; row++) {
-            for (int column = 0; column < 4; column++) {
-                if (buttonIndex < emojis.length) {
-                    String emoji = emojis[buttonIndex];
-                    JFXButton emojiButton = createEmojiButton(emoji);
-                    emojiGridpane.add(emojiButton, column, row);
-                    buttonIndex++;
-                } else {
-                    break;
-                }
-            }
-        }
-    }
-
     public void setImage(byte[] bytes, String sender) {
         HBox hBox = new HBox();
         Label messageLbl = new Label(sender);
@@ -188,3 +201,4 @@ public class ClientFormController implements Initializable {
         txtMsgArea.appendText(button.getText());
     }
 }
+

@@ -1,10 +1,12 @@
 package lk.ijse.controller;
 
-import com.jfoenix.controls.JFXTextField;
+
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.layout.AnchorPane;
+import javafx.scene.control.TextField;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.Pane;
 import lk.ijse.controller.client.Client;
 
 import java.io.IOException;
@@ -15,10 +17,13 @@ import java.util.regex.Pattern;
 public class LoginFormController implements Initializable {
 
     @FXML
-    private AnchorPane root;
+    private ImageView imglogo;
 
     @FXML
-    private JFXTextField txtName;
+    private Pane root;
+
+    @FXML
+    private TextField txtName;
 
     @FXML
     public void btnLoginForm(ActionEvent actionEvent) {

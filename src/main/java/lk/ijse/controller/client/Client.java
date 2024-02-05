@@ -38,8 +38,9 @@ public class Client implements Runnable, Serializable {
     }
 
     private void loadScene() throws IOException {
+        System.out.println("uhbuhbbnu");
         Stage stage = new Stage();
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/client_window_form.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/ClientForm.fxml"));
         Parent parent = loader.load();
         clientFormController = loader.getController();
         clientFormController.setClient(this);
